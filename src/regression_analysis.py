@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 
 # Load FOMC Scores
-fomc_minutes = pd.read_csv(r'data\processed\factor_sim_scored_meeting_minutes.csv')  # FOMC Meeting Minutes
+fomc_minutes = pd.read_csv(r'data\processed\cosine_sim_H-D-score_meeting_minutes.csv')  # FOMC Meeting Minutes
 
 # Load Market Data
 market_data = pd.read_csv(r'data\raw\market_data_1994_2024.csv')  # The 10Y-2Y spread, 1Y Treasury, DXY, Growth-Value Spread
