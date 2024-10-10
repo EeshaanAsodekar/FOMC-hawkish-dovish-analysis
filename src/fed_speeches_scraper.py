@@ -18,10 +18,16 @@ def download_speeches(json_file_path, start_year=2012, end_year=2024):
     for speech in speeches_data:
         # Extract the date and parse the year
         speech_date_str = speech.get('d', '')
-        try:
-            speech_date = datetime.strptime(speech_date_str, '%m/%d/%Y %I:%M:%S %p')
-        except ValueError:
-            print(f"Invalid date format for speech: {speech.get('t', 'Unknown Title')}")
+        speech_date = None
+        date_formats = ['%m/%d/%Y %I:%M:%S %p', '%m/%d/%Y']
+        for fmt in date_formats:
+            try:
+                speech_date = datetime.strptime(speech_date_str, fmt)
+                break
+            except ValueError:
+                continue
+        if not speech_date:
+            print(f"Invalid date format for speech: {speech.get('t', 'Unknown Title')} ({speech_date_str})")
             continue
         speech_year = speech_date.year
         if speech_year < start_year or speech_year > end_year:
