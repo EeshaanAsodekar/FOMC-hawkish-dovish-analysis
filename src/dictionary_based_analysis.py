@@ -54,7 +54,7 @@ def get_hawkish_score(dictionary_path, text_files_dir) -> pd.DataFrame:
     # stats_df.to_csv('file_word_count.csv')
 
     # Display the total word counts DataFrame
-    print(stats_df.head())
+    # print(stats_df.head())
 
     # Suppress FutureWarnings
     warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -75,8 +75,8 @@ def get_hawkish_score(dictionary_path, text_files_dir) -> pd.DataFrame:
     df_tf_idf = df_tf_idf.mul(df_i, axis=1)
 
     # Display the TF-IDF matrix for the first 5 documents
-    print(df_tf_idf.head(5))
-    print(df_tf_idf.shape)
+    # print(df_tf_idf.head(5))
+    # print(df_tf_idf.shape)
 
     # Weighting: Multiply TF-IDF by word counts to calculate weighted hawkish word scores
     weighted_counts = df_tf_idf * count_matrix_df
@@ -92,10 +92,35 @@ def get_hawkish_score(dictionary_path, text_files_dir) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
+    print("Hawkish Scores for Fed Chair Press Conferences")
     df = get_hawkish_score('data/processed/hawkish_gpt_dict.txt','data/raw/fomc_press_conf/texts') 
     print(df.head(10))
     print(df.tail(10))
+    df.to_csv('data/results/dict-hawkish-scored_Fed-chair-press-conf.csv')
 
+
+    print("\n*****************************************\n")
+    print("Hawkish Scores for FOMC Meeting Minutes")
     df = get_hawkish_score('data/processed/hawkish_gpt_dict.txt','data/raw/individual/meeting_minutes') 
     print(df.head(10))
     print(df.tail(10))
+    df.to_csv('data/results/dict-hawkish-scored_FOMC-meeting-minutes.csv')
+    print("\n*****************************************\n")
+
+
+    print("\n*****************************************\n")
+    print("Hawkish Scores for FOMC Statements")
+    df = get_hawkish_score('data/processed/hawkish_gpt_dict.txt','data/raw/individual/statements') 
+    print(df.head(10))
+    print(df.tail(10))
+    df.to_csv('data/results/dict-hawkish-scored_FOMC-statements.csv')
+    print("\n*****************************************\n")
+
+
+    print("\n*****************************************\n")
+    print("Hawkish Scores for Fed Speeches")
+    df = get_hawkish_score('data/processed/hawkish_gpt_dict.txt','data/raw/fed_speeches') 
+    print(df.head(10))
+    print(df.tail(10))
+    df.to_csv('data/results/dict-hawkish-scored_Fed-speeches.csv')
+    print("\n*****************************************\n")
