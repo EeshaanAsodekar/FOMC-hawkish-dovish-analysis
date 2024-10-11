@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
     print("\n*****************************************\n")
     print("Hawkish Scores for FOMC Meeting Minutes")
-    df = get_hawkish_score('data/processed/hawkish_gpt_dict.txt','data/raw/individual/meeting_minutes') 
+    df = get_hawkish_score('data/processed/hawkish_gpt_dict.txt','data/raw/FOMC/meeting_minutes') 
     print(df.head(10))
     print(df.tail(10))
     df.to_csv('data/results/dict-hawkish-scored_FOMC-meeting-minutes.csv')
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
     print("\n*****************************************\n")
     print("Hawkish Scores for FOMC Statements")
-    df = get_hawkish_score('data/processed/hawkish_gpt_dict.txt','data/raw/individual/statements') 
+    df = get_hawkish_score('data/processed/hawkish_gpt_dict.txt','data/raw/FOMC/statements') 
     print(df.head(10))
     print(df.tail(10))
     df.to_csv('data/results/dict-hawkish-scored_FOMC-statements.csv')

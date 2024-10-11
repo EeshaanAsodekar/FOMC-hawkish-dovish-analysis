@@ -138,15 +138,15 @@ def save_individual_files(input_file, output_dir, doc_type):
 def create_individual_files_for_minutes_and_statements():
     """
     Creates individual text files for each row of the cleaned FOMC Meeting Minutes and Statements.
-    Saves these files into the `data/raw/individual` directory, under separate folders for 
+    Saves these files into the `data/raw/FOMC` directory, under separate folders for 
     meeting minutes and statements.
     """
     minutes_input = 'data/processed/cleaned_meeting_minutes.csv'
     statements_input = 'data/processed/cleaned_statements.csv'
 
     # Create individual text files for meeting minutes and statements
-    save_individual_files(minutes_input, 'data/raw/individual/meeting_minutes', 'Minutes')
-    save_individual_files(statements_input, 'data/raw/individual/statements', 'Statements')
+    save_individual_files(minutes_input, 'data/raw/FOMC/meeting_minutes', 'Minutes')
+    save_individual_files(statements_input, 'data/raw/FOMC/statements', 'Statements')
 
 if __name__ == "__main__":
     # Process and clean both raw data files
