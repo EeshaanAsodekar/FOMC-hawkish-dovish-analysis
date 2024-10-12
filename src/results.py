@@ -99,7 +99,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def run_regression_and_plot_quintiles(hawkish_df, market_df, market_var, hawkish_change_col, window=5, num_quintiles=5):
+def run_regression_and_plot_quintiles(hawkish_df, market_df, market_var, hawkish_change_col, predictor_var:str, window=5, num_quintiles=5):
     """
     Perform regression analysis and plot quintile-based results for median 5-day cumulative market changes.
 
@@ -179,8 +179,8 @@ def run_regression_and_plot_quintiles(hawkish_df, market_df, market_var, hawkish
     # Plot the results
     plt.figure(figsize=(10, 6))
     plt.plot(quintile_median.index + 1, quintile_median, marker='o', label=market_var)
-    plt.title(f"Median {window}-Day Cumulative {market_var} Across Hawkishness Quintiles ({hawkish_change_col})")
-    plt.xlabel("Hawkishness Quintile")
+    plt.title(f"Median {window}-Day Cumulative {market_var} Across {predictor_var} Quintiles")
+    plt.xlabel(f"{predictor_var} Quintile")
     plt.ylabel(f"Median {window}-Day Cumulative {market_var}")
     plt.xticks(np.arange(1, num_quintiles + 1))
     plt.legend()
@@ -215,6 +215,10 @@ def extract_date_from_filename(filename):
 
 
 def perform_market_analysis() -> None:
+    '''
+    function to orchrestrate the returns computation and do analysis 
+    (quntile graphs) of the hawkishness score 1 change v/s the market instruements change
+    '''
     # Process the raw market data to get pct and absolute changes
     mkt_data = load_market_data('data/raw/FOMC_Data_2011_2024.xlsx', 'data/processed')
 
@@ -253,8 +257,107 @@ def perform_market_analysis() -> None:
         for hawkish_change_col in ['abs_change_hawkish', 'pct_change_hawkish']:
             for market_var in market_vars:
                 print(f">>>>> Plotting for: {hawkish_key} using {hawkish_change_col}")
-                run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col)
+                run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col, "Hawkishness-score-1")
+
+
+def perform_market_analysis_hawk2() -> None:
+    '''
+    function to orchrestrate the returns computation and do analysis 
+    (quntile graphs) of the hawkishness score 2 change v/s the market instruements change
+    '''
+    # Process the raw market data to get pct and absolute changes
+    mkt_data = load_market_data('data/raw/FOMC_Data_2011_2024.xlsx', 'data/processed')
+
+    # Dictionary to hold the Fed communication hawkishness results
+    dict_hawkish_scored = dict()
+
+    # Load data and rename columns appropriately
+    dict_hawkish_scored['dict-hawkish-scored_Fed-chair-press-conf'] = pd.read_csv(r'data/results/dict-hawkish-scored_Fed-chair-press-conf_hdict2.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_hawkish_scored['dict-hawkish-scored_Fed-speeches'] = pd.read_csv(r'data/results/dict-hawkish-scored_Fed-speeches_hdict2.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_hawkish_scored['dict-hawkish-scored_FOMC-meeting-minutes'] = pd.read_csv(r'data/results/dict-hawkish-scored_FOMC-meeting-minutes_hdict2.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_hawkish_scored['dict-hawkish-scored_FOMC-statements'] = pd.read_csv(r'data/results/dict-hawkish-scored_FOMC-statements_hdict2.csv').rename(columns={'Unnamed: 0': 'Filename'})
+
+    # Loop through the dictionaries and process each dataframe
+    for key in dict_hawkish_scored.keys():
+        print(f"Processing: {key}")
+
+        # Extract date from the filename and add a new 'Date' column
+        dict_hawkish_scored[key]['Date'] = dict_hawkish_scored[key]['Filename'].apply(extract_date_from_filename)
+
+        # Calculate absolute and percentage change of the hawkish score
+        dict_hawkish_scored[key]['abs_change_hawkish'] = dict_hawkish_scored[key]['Weighted_Hawkish_Sum'].diff()
+        dict_hawkish_scored[key]['pct_change_hawkish'] = dict_hawkish_scored[key]['Weighted_Hawkish_Sum'].pct_change()
+
+        # Replace inf values in pct_change_hawkish with NaN
+        dict_hawkish_scored[key]['pct_change_hawkish'].replace([float('inf'), -float('inf')], pd.NA, inplace=True)
+
+        # Optionally drop rows with NaN (including the first row after pct_change)
+        dict_hawkish_scored[key] = dict_hawkish_scored[key].dropna()
+
+        # Display the modified dataframe (for verification)
+        print(dict_hawkish_scored[key].head())
+        print(dict_hawkish_scored[key].shape)
+
+    # Run regression analysis and plot for each hawkish dataframe and market variable
+    for hawkish_key, hawkish_df in dict_hawkish_scored.items():
+        for hawkish_change_col in ['abs_change_hawkish', 'pct_change_hawkish']:
+            for market_var in market_vars:
+                print(f">>>>> Plotting for: {hawkish_key} using {hawkish_change_col}")
+                run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col, "Hawkishness-score-2")
+
+
+def perform_market_analysis_composite() -> None:
+    '''
+    function to orchrestrate the returns computation and do analysis 
+    (quntile graphs) of the composite score change v/s the market instruements change
+    '''
+    # Process the raw market data to get pct and absolute changes
+    mkt_data = load_market_data('data/raw/FOMC_Data_2011_2024.xlsx', 'data/processed')
+
+    # Dictionary to hold the Fed communication hawkishness results
+    dict_hawkish_scored = dict()
+
+    # Load data and rename columns appropriately
+    dict_hawkish_scored['composite-scored_Fed-chair-press-conf'] = pd.read_csv(r'data/results/composite-scored_Fed-chair-press-conf.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_hawkish_scored['composite-scored_Fed-speeches'] = pd.read_csv(r'data/results/composite-scored_Fed-speeches_hdict2.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_hawkish_scored['composite-scored_FOMC-meeting-minutes'] = pd.read_csv(r'data/results/composite-scored_FOMC-meeting-minutes_hdict2.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_hawkish_scored['composite-scored_FOMC-statements'] = pd.read_csv(r'data/results/composite-scored_FOMC-statements_hdict2.csv').rename(columns={'Unnamed: 0': 'Filename'})
+
+    # Loop through the dictionaries and process each dataframe
+    for key in dict_hawkish_scored.keys():
+        print(f"Processing: {key}")
+
+        # Extract date from the filename and add a new 'Date' column
+        dict_hawkish_scored[key]['Date'] = dict_hawkish_scored[key]['Filename'].apply(extract_date_from_filename)
+
+        # Calculate absolute and percentage change of the hawkish score
+        dict_hawkish_scored[key]['abs_change_hawkish'] = dict_hawkish_scored[key]['Composite_Score'].diff()
+        dict_hawkish_scored[key]['pct_change_hawkish'] = dict_hawkish_scored[key]['Composite_Score'].pct_change()
+
+        # Replace inf values in pct_change_hawkish with NaN
+        dict_hawkish_scored[key]['pct_change_hawkish'].replace([float('inf'), -float('inf')], pd.NA, inplace=True)
+
+        # Optionally drop rows with NaN (including the first row after pct_change)
+        dict_hawkish_scored[key] = dict_hawkish_scored[key].dropna()
+
+        # Display the modified dataframe (for verification)
+        print(dict_hawkish_scored[key].head())
+        print(dict_hawkish_scored[key].shape)
+
+    # Run regression analysis and plot for each hawkish dataframe and market variable
+    for hawkish_key, hawkish_df in dict_hawkish_scored.items():
+        for hawkish_change_col in ['abs_change_hawkish', 'pct_change_hawkish']:
+            for market_var in market_vars:
+                print(f">>>>> Plotting for: {hawkish_key} using {hawkish_change_col}")
+                run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col,"Composite-score")
 
 
 if __name__ == "__main__":
+    # Analysis on the original hawkish score
     perform_market_analysis()
+
+    # Analysis on the hawkish score 2
+    # perform_market_analysis_hawk2()
+
+    # Analysis on the composite score
+    # perform_market_analysis_composite()
