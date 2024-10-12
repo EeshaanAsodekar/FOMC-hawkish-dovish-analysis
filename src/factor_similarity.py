@@ -140,18 +140,65 @@ DOVISH_SENTENCES = [
     "Prepared to adjust policy as needed"
 ]
 
+import string
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+
+# Ensure the necessary NLTK packages are downloaded
+nltk.download('punkt_tab')
+nltk.download('stopwords')
+
+# Function to preprocess text (removing punctuation, stop words, etc.)
+def preprocess_text(text):
+    # Convert to lowercase
+    text = text.lower()
+
+    # Tokenize text into words
+    words = word_tokenize(text)
+
+    # Remove punctuation
+    words = [word for word in words if word not in string.punctuation]
+
+    # Remove stopwords
+    stop_words = set(stopwords.words('english'))
+    words = [word for word in words if word not in stop_words]
+
+    # Join words back into a single string
+    return ' '.join(words)
+
 # Function to generate embeddings from text using FinBERT
 def get_embedding(text):
     inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
     outputs = model(**inputs)
     return outputs.last_hidden_state.mean(dim=1).detach().numpy()  # Mean pooling to get single embedding
 
+# Updated function to handle long documents by splitting into chunks
+def get_embedding_for_long_text(text, chunk_size=512):
+    # Preprocess the text
+    preprocessed_text = preprocess_text(text)
+
+    # Tokenize the entire preprocessed text
+    tokens = tokenizer.encode(preprocessed_text, truncation=False)  # No truncation
+
+    # Split tokens into chunks of `chunk_size` and gather embeddings for each chunk
+    embeddings = []
+    for i in range(0, len(tokens), chunk_size):
+        chunk = tokenizer.decode(tokens[i:i+chunk_size], skip_special_tokens=True)
+        chunk_embedding = get_embedding(chunk)
+        embeddings.append(chunk_embedding)
+
+    # Average the embeddings across all chunks to get a single embedding for the whole document
+    return np.mean(embeddings, axis=0)
+
 # Function to calculate similarity between text and hawkish/dovish sentences
 def calculate_similarity(text, hawkish_sentences, dovish_sentences):
-    text_embedding = get_embedding(text)
+    # Get the embedding for the entire preprocessed document by chunking it
+    text_embedding = get_embedding_for_long_text(text)
 
-    hawkish_scores = [cosine_similarity(text_embedding, get_embedding(sentence)) for sentence in hawkish_sentences]
-    dovish_scores = [cosine_similarity(text_embedding, get_embedding(sentence)) for sentence in dovish_sentences]
+    # Preprocess hawkish and dovish sentences before embedding
+    hawkish_scores = [cosine_similarity(text_embedding, get_embedding(preprocess_text(sentence))) for sentence in hawkish_sentences]
+    dovish_scores = [cosine_similarity(text_embedding, get_embedding(preprocess_text(sentence))) for sentence in dovish_sentences]
 
     avg_hawkish = np.mean(hawkish_scores)
     avg_dovish = np.mean(dovish_scores)
