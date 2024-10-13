@@ -1,4 +1,6 @@
 import pandas as pd
+import os
+import textwrap
 
 def load_market_data(raw_mkt_data_file_path: str, processed_mkt_data_path: str) -> pd.DataFrame:
     """
@@ -99,7 +101,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def run_regression_and_plot_quintiles(hawkish_df, market_df, market_var, hawkish_change_col, predictor_var:str, window=5, num_quintiles=5):
+def run_regression_and_plot_quintiles(hawkish_df, market_df, market_var, hawkish_change_col, predictor_var:str, fed_doc:str, window=5, num_quintiles=5):
     """
     Perform regression analysis and plot quintile-based results for median 5-day cumulative market changes.
 
@@ -179,14 +181,24 @@ def run_regression_and_plot_quintiles(hawkish_df, market_df, market_var, hawkish
     # Plot the results
     plt.figure(figsize=(10, 6))
     plt.plot(quintile_median.index + 1, quintile_median, marker='o', label=market_var)
-    plt.title(f"Median {window}-Day Cumulative {market_var} Across {predictor_var} Quintiles")
+    
+    title = f"{fed_doc[5:]} based - Median {window}-Day Cumulative {market_var} Across {predictor_var} Quintiles"
+    wrapped_title = "\n".join(textwrap.wrap(title, width=100))
+    plt.title(wrapped_title)
+
     plt.xlabel(f"{predictor_var} Quintile")
     plt.ylabel(f"Median {window}-Day Cumulative {market_var}")
     plt.xticks(np.arange(1, num_quintiles + 1))
     plt.legend()
-    plt.show()
+    # plt.show()
 
-    return quintile_median  # Optional: return the quintile median results for further analysis
+    # Saving plot
+    output_dir = f"data/results-vizl/{predictor_var}/"
+    os.makedirs(output_dir, exist_ok=True)
+    plt.savefig(f"{output_dir}{fed_doc} based Median {window}-Day Cumulative {market_var} Across {predictor_var} Quintiles.png")
+    plt.close()
+
+    return quintile_median
 
 import pandas as pd
 import statsmodels.api as sm
@@ -254,10 +266,10 @@ def perform_market_analysis() -> None:
 
     # Run regression analysis and plot for each hawkish dataframe and market variable
     for hawkish_key, hawkish_df in dict_hawkish_scored.items():
-        for hawkish_change_col in ['abs_change_hawkish', 'pct_change_hawkish']:
+        for hawkish_change_col in ['pct_change_hawkish']:
             for market_var in market_vars:
                 print(f">>>>> Plotting for: {hawkish_key} using {hawkish_change_col}")
-                run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col, "Hawkishness-score-1")
+                run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col, "Hawkishness-score-1", hawkish_key)
 
 
 def perform_market_analysis_hawk2() -> None:
@@ -300,10 +312,10 @@ def perform_market_analysis_hawk2() -> None:
 
     # Run regression analysis and plot for each hawkish dataframe and market variable
     for hawkish_key, hawkish_df in dict_hawkish_scored.items():
-        for hawkish_change_col in ['abs_change_hawkish', 'pct_change_hawkish']:
+        for hawkish_change_col in ['pct_change_hawkish']:
             for market_var in market_vars:
                 print(f">>>>> Plotting for: {hawkish_key} using {hawkish_change_col}")
-                run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col, "Hawkishness-score-2")
+                run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col, "Hawkishness-score-2", hawkish_key)
 
 
 def perform_market_analysis_composite() -> None:
@@ -345,19 +357,22 @@ def perform_market_analysis_composite() -> None:
         print(dict_hawkish_scored[key].shape)
 
     # Run regression analysis and plot for each hawkish dataframe and market variable
+    i = 0
     for hawkish_key, hawkish_df in dict_hawkish_scored.items():
-        for hawkish_change_col in ['abs_change_hawkish', 'pct_change_hawkish']:
+        for hawkish_change_col in ['pct_change_hawkish']:
             for market_var in market_vars:
                 print(f">>>>> Plotting for: {hawkish_key} using {hawkish_change_col}")
-                run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col,"Composite-score")
+                run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col,"Composite-score", hawkish_key)
+                i+=1
 
+    print("total plots>> : ", i)
 
 if __name__ == "__main__":
     # Analysis on the original hawkish score
     perform_market_analysis()
 
     # Analysis on the hawkish score 2
-    # perform_market_analysis_hawk2()
+    perform_market_analysis_hawk2()
 
     # Analysis on the composite score
-    # perform_market_analysis_composite()
+    perform_market_analysis_composite()
