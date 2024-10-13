@@ -318,6 +318,54 @@ def perform_market_analysis_hawk2() -> None:
                 run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col, "Hawkishness-score-2", hawkish_key)
 
 
+def perform_market_analysis_dov() -> None:
+    '''
+    function to orchrestrate the returns computation and do analysis 
+    (quntile graphs) of the dovishness score 2 change v/s the market instruements change
+    '''
+    # Process the raw market data to get pct and absolute changes
+    mkt_data = load_market_data('data/raw/FOMC_Data_2011_2024.xlsx', 'data/processed')
+
+    # Dictionary to hold the Fed communication hawkishness results
+    dict_hawkish_scored = dict()
+
+    # Load data and rename columns appropriately
+    dict_hawkish_scored['dict-dovish-scored_Fed-chair-press-conf'] = pd.read_csv(r'data\results\dict-dovish-scored_Fed-chair-press-conf.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_hawkish_scored['dict-dovish-scored_Fed-speeches'] = pd.read_csv(r'data\results\dict-dovish-scored_Fed-speeches_hdict2.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_hawkish_scored['dict-dovish-scored_FOMC-meeting-minutes'] = pd.read_csv(r'data\results\dict-dovish-scored_FOMC-meeting-minutes_hdict2.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_hawkish_scored['dict-dovish-scored_FOMC-statements'] = pd.read_csv(r'data\results\dict-dovish-scored_FOMC-statements_hdict2.csv').rename(columns={'Unnamed: 0': 'Filename'})
+
+    # Loop through the dictionaries and process each dataframe
+    for key in dict_hawkish_scored.keys():
+        print(f"Processing: {key}")
+
+        # Extract date from the filename and add a new 'Date' column
+        dict_hawkish_scored[key]['Date'] = dict_hawkish_scored[key]['Filename'].apply(extract_date_from_filename)
+
+        # Calculate absolute and percentage change of the hawkish score
+        dict_hawkish_scored[key]['abs_change_hawkish'] = dict_hawkish_scored[key]['Weighted_Dovish_Sum'].diff()
+        dict_hawkish_scored[key]['pct_change_hawkish'] = dict_hawkish_scored[key]['Weighted_Dovish_Sum'].pct_change()
+
+        # Replace inf values in pct_change_hawkish with NaN
+        dict_hawkish_scored[key]['pct_change_hawkish'].replace([float('inf'), -float('inf')], pd.NA, inplace=True)
+
+        # Optionally drop rows with NaN (including the first row after pct_change)
+        dict_hawkish_scored[key] = dict_hawkish_scored[key].dropna()
+
+        # Display the modified dataframe (for verification)
+        print(dict_hawkish_scored[key].head())
+        print(dict_hawkish_scored[key].shape)
+
+    i = 0
+    # Run regression analysis and plot for each hawkish dataframe and market variable
+    for hawkish_key, hawkish_df in dict_hawkish_scored.items():
+        for hawkish_change_col in ['pct_change_hawkish']:
+            for market_var in market_vars:
+                print(f">>>>> Plotting for: {hawkish_key} using {hawkish_change_col}")
+                run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col, "Dovish-score", hawkish_key)
+                i+=1
+    print("tot dov plots: ", i)
+
 def perform_market_analysis_composite() -> None:
     '''
     function to orchrestrate the returns computation and do analysis 
@@ -368,6 +416,9 @@ def perform_market_analysis_composite() -> None:
     print("total plots>> : ", i)
 
 if __name__ == "__main__":
+    # Analysis on the dovish score
+    perform_market_analysis_dov()
+    
     # Analysis on the original hawkish score
     perform_market_analysis()
 
