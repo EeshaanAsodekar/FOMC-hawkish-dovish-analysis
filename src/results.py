@@ -415,6 +415,81 @@ def perform_market_analysis_composite() -> None:
 
     print("total plots>> : ", i)
 
+def perform_market_analysis_factor_similarity() -> None:
+    # Process the raw market data to get pct and absolute changes
+    mkt_data = load_market_data('data/raw/FOMC_Data_2011_2024.xlsx', 'data/processed')
+
+    # Dictionary to hold the Fed communication hawkishness results
+    dict_hawkish_scored = dict()
+
+    # Dictionary to hold the Fed communication dovishness results
+    dict_dovish_scored = dict()
+
+    # Load data and rename columns appropriately
+    dict_hawkish_scored['dict-hawkish-scored_FOMC-meeting-minutes'] = pd.read_csv(r'data/processed/cosine_sim_H-D-score_meeting_minutes.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_hawkish_scored['dict-hawkish-scored_FOMC-statements'] = pd.read_csv(r'data/processed/cosine_sim_H-D-score_statements.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_hawkish_scored['dict-hawkish-scored_Fed-chair-press-conf'] = pd.read_csv(r'data/processed/cosine_sim_H-D-score_press_conferences.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_hawkish_scored['dict-hawkish-scored_Fed_speeches'] = pd.read_csv(r'data/processed/cosine_sim_H-D-score_fed_speeches.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    
+    dict_dovish_scored['dict-hawkish-scored_FOMC-meeting-minutes'] = pd.read_csv(r'data/processed/cosine_sim_H-D-score_meeting_minutes.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_dovish_scored['dict-hawkish-scored_FOMC-statements'] = pd.read_csv(r'data/processed/cosine_sim_H-D-score_statements.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_dovish_scored['dict-hawkish-scored_Fed-chair-press-conf'] = pd.read_csv(r'data/processed/cosine_sim_H-D-score_press_conferences.csv').rename(columns={'Unnamed: 0': 'Filename'})
+    dict_dovish_scored['dict-hawkish-scored_Fed_speeches'] = pd.read_csv(r'data/processed/cosine_sim_H-D-score_fed_speeches.csv').rename(columns={'Unnamed: 0': 'Filename'})
+
+    # Loop through the dictionaries and process each dataframe
+    for key in dict_hawkish_scored.keys():
+        print(f"Processing: {key}")
+
+        # Extract date from the filename and add a new 'Date' column
+        dict_hawkish_scored[key]['Date'] = dict_hawkish_scored[key]['Date'].apply(extract_date_from_filename)
+
+        # Calculate absolute and percentage change of the hawkish score
+        dict_hawkish_scored[key]['abs_change_hawkish'] = dict_hawkish_scored[key]['Hawkish_Score'].diff()
+        dict_hawkish_scored[key]['pct_change_hawkish'] = dict_hawkish_scored[key]['Hawkish_Score'].pct_change()
+
+        # Replace inf values in pct_change_hawkish with NaN
+        dict_hawkish_scored[key]['pct_change_hawkish'].replace([float('inf'), -float('inf')], pd.NA, inplace=True)
+
+        # Optionally drop rows with NaN (including the first row after pct_change)
+        dict_hawkish_scored[key] = dict_hawkish_scored[key].dropna()
+
+        # Display the modified dataframe (for verification)
+        print(dict_hawkish_scored[key].head())
+        print(dict_hawkish_scored[key].shape)
+
+    
+    for key in dict_dovish_scored.keys():
+        # Extract date from the filename and add a new 'Date' column
+        dict_dovish_scored[key]['Date'] = dict_dovish_scored[key]['Date'].apply(extract_date_from_filename)
+
+        # Calculate absolute and percentage change of the dovish score
+        dict_dovish_scored[key]['abs_change_dovish'] = dict_dovish_scored[key]['Dovish_Score'].diff()
+        dict_dovish_scored[key]['pct_change_dovish'] = dict_dovish_scored[key]['Dovish_Score'].pct_change()
+
+        # Replace inf values in pct_change_hawkish with NaN
+        dict_dovish_scored[key]['pct_change_dovish'].replace([float('inf'), -float('inf')], pd.NA, inplace=True)
+
+        # Optionally drop rows with NaN (including the first row after pct_change)
+        dict_dovish_scored[key] = dict_dovish_scored[key].dropna()
+
+        # Display the modified dataframe (for verification)
+        print(dict_dovish_scored[key].head())
+        print(dict_dovish_scored[key].shape)
+
+    # Run regression analysis and plot for each hawkish dataframe and market variable
+    for hawkish_key, hawkish_df in dict_hawkish_scored.items():
+        for hawkish_change_col in ['pct_change_hawkish']:
+            for market_var in market_vars:
+                print(f">>>>> Plotting for: {hawkish_key} using {hawkish_change_col}")
+                run_regression_and_plot_quintiles(hawkish_df, mkt_data, market_var, hawkish_change_col,"hawk-sim-score",hawkish_key)
+
+    # Run regression analysis and plot for each dovish dataframe and market variable
+    for dovish_key, dovish_df in dict_dovish_scored.items():
+        for dovish_change_col in ['pct_change_dovish']:
+            for market_var in market_vars:
+                print(f">>>>> Plotting for: {dovish_key} using {dovish_change_col}")
+                run_regression_and_plot_quintiles(dovish_df, mkt_data, market_var, dovish_change_col, "dovish-sim-score",dovish_key)
+
 if __name__ == "__main__":
     # Analysis on the dovish score
     perform_market_analysis_dov()
@@ -427,3 +502,6 @@ if __name__ == "__main__":
 
     # Analysis on the composite score
     perform_market_analysis_composite()
+
+    # Analysis on the factor similarity approach
+    perform_market_analysis_factor_similarity()
