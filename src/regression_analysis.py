@@ -363,7 +363,7 @@ def perform_market_analysis_dov() -> None:
 
 if __name__ == "__main__":
     # Analysis on the original hawkish score
-    # perform_market_analysis() # highest was 15%
+    perform_market_analysis()
 
     # Analysis on the dovish score
     perform_market_analysis_dov()
