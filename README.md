@@ -42,3 +42,9 @@ Quintile-based visualizations and Regression Analysis show how shifts in hawkish
 6. **Visualizing the Fed Hawkish/Dovish Sentiment vs Market moves:** Run the [results.py](https://github.com/EeshaanAsodekar/FOMC-hawkish-dovish-analysis/blob/main/src/results.py) to get the quintile plots of the Fed Hawkish/Dovish sentiment vs the market moves. Quintile plots are chosen so that we can analyze the overall trend in the hawkish/dovish scores and the market variables, to decide if the market moves make intuitive sense to facilitate further analysis or tweaking the models/dictionaries.
 
 7. **Performing Statistical Analysis on the hawkish/dovish sentiment and the market moves:** Run the [regression_analysis.py](https://github.com/EeshaanAsodekar/FOMC-hawkish-dovish-analysis/blob/main/src/regression_analysis.py) to get R-squared and other parameters to gauge the significance of the hawkish/dovish score and the market moves.
+
+## Key Results Obtained
+### Dictionary Based Approach
+1. **Moves in the VIX against change in the hawkish-score-1**
+![Hawkish-score-1 v/s VIX Moves](https://github.com/EeshaanAsodekar/FOMC-hawkish-dovish-analysis/blob/main/data/results-vizl/Hawkishness-score-1/dict-hawkish-scored_Fed-chair-press-conf%20based%20Median%205-Day%20Cumulative%20VIX_pct_change%20Across%20Hawkishness-score-1%20Quintiles.png)
+Intuitive underlying relationship: As the Fed’s hawkishness increases, there is an increase in volatility. The intuitive logic being that tightening monetary policy leads to a decrease in asset prices. This makes sense because a big move in hawkishness translates to a big potential Fed rate hike, which then has its effects on the market valuations, which in turn leads to a correction, thereby increasing the VIX.
