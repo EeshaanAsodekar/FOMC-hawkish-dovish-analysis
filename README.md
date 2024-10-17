@@ -67,3 +67,24 @@ We can see that we get significant and intuitive results from the prototyped dic
 2. **Moves in the 2 yr 10yr spread against hawk-sim-score**
 ![hawk-sim-score v/s GT2 GT10 spread](https://github.com/EeshaanAsodekar/FOMC-hawkish-dovish-analysis/blob/main/data/results-vizl/hawk-sim-score/dict-hawkish-scored_Fed_speeches%20based%20Median%205-Day%20Cumulative%202s10s_Spread_pct_change%20Across%20hawk-sim-score%20Quintiles.png)
 **Intuitive underlying relationship:** As the hawkishness score increases from the first to the second quintile, there is a sharp rise in the 2s10s spread. This could indicate that initial hawkish signals lead to a steepening yield curve, possibly because investors expect higher short-term rates but do not yet fully price in longer-term rate hikes. However, as the hawkishness increases further (from quintiles 3 to 5), the effect on the yield curve flattens or even slightly reverses, likely due to expectations that the economy may slow down, reducing the longer-term yields. This fits with the idea that extreme hawkishness, while signaling higher short-term rates, also signals reduced economic growth prospects, which can dampen longer-term yields, thus flattening or narrowing the 2s10s spread.
+
+## Env Setup and Structure
+### Project Structure
+- **/data/raw**: Contains the raw input data (FOMC meeting minutes, FOMC statements, Fed Chair press conferences, Governors' speeches)
+- **/data/processed**: Holds processed datasets used for analysis and the hawkish and dovish dictionaries.
+- **/src**: Python scripts for scraping, processing, hawkish/dovish scoring, and visualization.
+- **/results-vizl**: Contains the final quintile visualizations of sentiment vs. market indicators.
+
+
+### Dependencies and Environment Setup
+To ensure a smooth setup, use the `fomc_analysis_env.yml` to recreate the environment.
+
+```bash
+# Create the environment using the provided YAML file
+conda env create -f fomc_analysis_env.yml
+# Activate the environment
+conda activate FOMC_analysis_env
+```
+
+## Contact Information
+For any questions or collaboration, please contact me at [LinkedIn](https://www.linkedin.com/in/eeshaanasodekar).
