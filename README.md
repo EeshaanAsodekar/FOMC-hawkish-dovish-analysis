@@ -14,9 +14,9 @@ We analyze all these Fed transcripts from 2012 to 2024, the reason being the dis
 
 ### Hawkish/Dovish Scoring: 
 1. Dictionary-Based Approach
-    - Custom dictionaries [link](https://github.com/EeshaanAsodekar/FOMC-hawkish-dovish-analysis/blob/main/data/processed/hawkish_gpt_dict.txt) were created with hawkish and dovish terms to score sentiment within Fed communications. The composite score measures the relative balance of hawkish vs. dovish sentiment using:
+    - Custom dictionaries ([link])(https://github.com/EeshaanAsodekar/FOMC-hawkish-dovish-analysis/blob/main/data/processed/hawkish_gpt_dict.txt) were created with hawkish and dovish terms to score sentiment within Fed communications. The composite score measures the relative balance of hawkish vs. dovish sentiment using:
     **Composite Score = (h_score - d_score) / (h_score + d_score)**
-    - This approach applies a **TF-IDF-based** analysis to assess how sentiment shifts align with movements in key market variables.
+    - This approach applies the **TF-IDF-based** analysis based on the [Loughran and McDonald 10-Ks analysis paper](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1540-6261.2010.01625.x).
 2. Cosine similarity-based sentiment analysis.
     - This method uses **FinBERT embeddings** to compute **cosine similarity** between new text data and pre-defined [hawkish/dovish phrases](https://github.com/EeshaanAsodekar/FOMC-hawkish-dovish-analysis/blob/main/src/factor_similarity.py), adding a semantic dimension to sentiment tracking.
 
